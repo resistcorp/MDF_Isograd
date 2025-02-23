@@ -58,3 +58,25 @@ Deno.test("grids", async (t)=> {
 		assertFalse(isValid(grid, pos(-1, 0)));
 	});
 });
+
+Deno.test("positions", async (t) => {
+	await t.step("creation", () =>{
+		const p = pos(5, 4);
+		assertExists(p.col);
+		assertExists(p.row);
+		assertEquals(4, p.col);
+		assertEquals(5, p.row);
+	})
+	await t.step("xy", () =>{
+		const p = pos(5, 4);
+		assertExists(p.x);
+		assertExists(p.y);
+		assertEquals(4, p.x);
+		assertEquals(5, p.y);
+	})
+	await t.step("toString", () =>{
+		const p = pos(5, 4);
+		assertEquals("pos(x4,y5)", p.toString());
+
+	})
+})

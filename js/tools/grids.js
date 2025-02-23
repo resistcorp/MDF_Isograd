@@ -18,7 +18,7 @@ function readGrid(rows, columns = undefined, splitter = ""){
 	}
 	return Object.assign(ret, GRID, {rows, cols : ret[0].length});
 }
-const GRID = {isGrid : true, type : null, rows : 0, cols : 0}; GRID.type = GRID;
+const GRID = {isGrid : true, type : null, rows : 0, cols : 0, at : function(pos){return gridAtPos(this, pos);}}; GRID.type = GRID;
 function readGridHW(splitter = ""){
 	const [H, W] = readints();
 	return readGrid(H, W, splitter);
@@ -36,6 +36,12 @@ function readGridH_(splitter = ""){
 	return readGrid(H, undefined, splitter);
 }
 
+const rgh = readGridH_;
+const rghw = readGridHW;
+const rg_h = readGrid_H;
+const rgwh = readGridWH;
+
+
 //readingFromGrid
 function gridAt(grid, row, col) {
 	return grid[row]?.[col];
@@ -44,7 +50,7 @@ const gridAtPos = (grid, pos) => gridAt(grid, pos.row, pos.col);
 
 //positions
 function pos(row, col){ return Object.assign({row, col, x : col, y : row}, POS);};
-const POS = {isGrid : true, type : null}; POS.type = POS;
+const POS = {isGrid : true, type : null, toString : function(){return `pos(x${this.x},y${this.y})`}}; POS.type = POS;
 const posXY = (x, y) => pos(y, x);
 const posxy = posXY;
 
