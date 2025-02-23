@@ -1,3 +1,24 @@
+function main(){
+	const lines = rpl();
+	let best = lines.map(line => {
+		const [C, G, S, B] = split(line);
+		return {C,G,S,B};
+	})
+	.sort( (a, b) => {
+		if(a.G == b.G){
+			if(a.S == b.S){
+				return a.B - b.B
+			}
+			return a.S - b.S;
+
+		}
+		return a.G - b.G;
+	}).reverse();
+	err("sort : ", best);
+
+	print(best[0].C);
+
+}
 // this line plugs-in the tools. Call your main function main (or replace main with your main func name ^^)
 // readline() (or rl(1) or r()) is different when running
 //  - in isograd 
@@ -8,7 +29,7 @@ createReader(readline_object).then(main);
 //printing aliases
 let println = (...params) => console.log(...params);//<<overwritten in vscode
 const eprintln = (...params) => console.error(...params);
-const print = (...params)=>println(params); const p = print;
+const print = (...params)=>println(...params); const p = print;
 const err = eprintln; const ep = eprintln; const e = eprintln;
 
 //reading tools

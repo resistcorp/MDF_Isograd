@@ -10,7 +10,14 @@ const arrRnd = arr => arr[rndi(arr.lenght)];
 const rndarr = arrRnd;
 const rndI = rndi;
 
-export const math = { sum, floor, random, rnd, rndi, rndarr, arrRnd, rndI };
+//ranges
+const range = (v, min, max) => ass(min<=max, "min<=max")&&v <=max && v >= min;
 
-///don't copy-paste
-export default { sum, floor, random, rnd, rndi, rndarr, arrRnd, rndI };
+function ass(val, msg = "assertion failed"){
+	if(!val) throw(msg);
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+///don't copy-paste after this
+export default { sum, floor, random, rnd, rndi, rndarr, arrRnd, rndI, range };
