@@ -1,4 +1,4 @@
-import { math } from "./math.js";
+import math from "./math.js";
 import { assert, assertFalse, assertLess, assertGreaterOrEqual, assertThrows } from "jsr:@std/assert";
 
 const {rndi, range} = math;
