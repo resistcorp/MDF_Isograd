@@ -38,9 +38,9 @@ function makeGraph(edges, nodeData){
  * @yields { WayPoint } the next node, a path leading to it, in bfs order
  */
 function* bfs(graph, startIdx){
-	const front = [makePath(startIdx, null)];
-	const passed = new Set();
-	const next = [];
+	const passed = new Set([startIdx]);
+	let front = [makePath(startIdx, null)];
+	let next = [];
 
 	while(front.length > 0){
 		for(const path of front){
@@ -48,13 +48,14 @@ function* bfs(graph, startIdx){
 			const node = graph.nodes[nodeID];
 			const wp = {path, node, graph};
 			yield wp;
-			passed.add(nodeID);
-			for(const neighbour of node.neighbours.filter(id => !passed.has(id))){
+			for(const neighbour of node.neighbours){
+				if(passed.has(neighbour))
+					continue;
+				passed.add(neighbour);
 				next.push(makePath(neighbour, path));
 			}
 		}
-		front.length = 0;//empty
-		front.push(...next)
+		[front, next] = [next, front];
 		next.length = 0;
 	}
 }
