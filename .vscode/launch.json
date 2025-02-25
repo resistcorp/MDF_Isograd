@@ -5,6 +5,38 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+      "request": "launch",
+
+      /* modified: descriptive name */
+      "name": "Debug tests",
+
+      /* modified: was generated as "pwa-node", but VS Code shows me
+      a diagnostic warning for that value: "Please use type node instead(2)" */
+      "type": "node",
+
+      /* disabled specific entrypoint */
+      // "program": "${workspaceFolder}/main.ts",
+
+      "cwd": "${workspaceFolder}",
+
+      /* modified: using deno process name from my PATH */
+      "runtimeExecutable": "deno",
+
+      "runtimeArgs": [
+        /* modified: was generated as "run", but you asked about testing */
+        "test",
+
+        /* modified: was generated as "--inspect", but using this option
+        causes an initial break to wait for the debugger to attach */
+        "--inspect-brk"
+
+        /* disabled: allowing all permissions is unsafe: only allow
+        the specific permissions that your scripts need */
+        // "--allow-all"
+      ],
+      "attachSimplePort": 9229
+    },
+		{
 			"request": "launch",
 			"name": "launch with input one",
 			"type": "node",
