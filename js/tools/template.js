@@ -42,7 +42,7 @@ const readsplit = (splitter = " ") => split(readline(), splitter);
 const readints = (splitter = " ") => readsplit(splitter).map(pi);
 const rs = readsplit; const ri = readints;
 
-function createReader(isogradReader){
+function createReader(isogradReader, testData){
 	return new Promise((resolve, reject) => {
 		if(isogradReader){
 		//the isograd way
@@ -54,11 +54,15 @@ function createReader(isogradReader){
 					ret.size = input.length;
 					resolve(ret);
 				}); 
+		}else if(testData){
+			if(testData.println) println = testData.println;
+			resolve(testData.readline);
 		}else{
 			import("../../../tools/debug.js")
 			.then(imp => {
 				console.log("was able to import debug :", imp);
-				println = imp.makePrintLn();
+				let pr = imp.makePrintLn();
+				if(pr) println = pr;
 				resolve(imp.makeReadline());
 			})
 			.catch(reject);

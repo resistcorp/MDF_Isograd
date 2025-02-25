@@ -3,53 +3,36 @@ function main(){
 	const ev2 = envergure * envergure;
 	const start = readPos();
 	const end = readPos();
-	let prises  = rpl().map(parsePos);
-	prises.push(start);
-	prises.push(end);
+	let prises  = [start, end, ...rpl().map(parsePos)];
 	let edges = [];
 	for(let i = 0; i < prises.length; i++){
 		let A = prises[i];
-		A.connexions ??= [];
-		A.index = i;
 		for(let j = 0; j < i; j++){
 			let B = prises[j];
-			B.connexions ??= [];
 			if(distSq(A, B) <= ev2){
-				edges.push({A, B});
-				A.connexions.push(j);
-				B.connexions.push(i);
+				edges.push({A : i, B : j});
 			}
 		}
 	}
-	//BFS
-  let pool = [];
-	let front = [[start]];
-	let next = [];
-	let visited = new Set();
-	while(front.length > 0){
-		next.length = 0;
-		for(let path of front){
-			let prise = path[0];
-			visited.add(prise.index);
-			for(const index of prise.connexions){
-				let to = prises[index];
-				if(to == end){
-					for(const pt of path.reverse())
-						print(pt.x, pt.y);
-					print(end.x, end.y);
-					return;
+
+	const graph = makeGraph(edges, prises);
+	const startIdx = 0;
+	const endIdx = 1;
+
+	try{
+		for(const {path, node} of bfs(graph, startIdx)){
+			if(node.index == endIdx){
+				for(const id of iter(path)){
+					const prise = prises[id];
+					print(prise.x, prise.y);
 				}
-				if(!path.includes(to) && ! visited.has(to.index)){
-					let newPath = pool.pop() ?? [];
-					newPath.push(to);
-					newPath.push(...path);
-					next.push(newPath);
-				}
+				return;
 			}
-			path.length = 0;
-			pool.push(path);
+
 		}
-		[front, next] = [next, front];
+	}catch(e){
+		eprintln("error while calling bfs");
+		eprintln(e);
 	}
 	print(-1);
 }
@@ -146,3 +129,110 @@ const dist = (posA, posB) => posA.minus(posB).length();
 const distSq = (posA, posB) => posA.minus(posB).lengthSq();
 
 const last = arr => arr[arr.length-1];
+
+/**
+ * 
+ * @param {[Edge]} edges the node-indices that are connected
+ * @param {(number|[any])?} nodeData either what to encapsulate or how to
+ * @returns {Graph}
+ */
+function makeGraph(edges, nodeData){
+	let expectedNumber = 0;
+	let nodes;
+	if(Number.isInteger(nodeData)){
+		nodes = new Array(nodeData).fill().map(makeNode);
+		expectedNumber = nodeData;
+	}else if(Array.isArray(nodeData)){
+		nodes = nodeData.map(makeNode);
+		expectedNumber = nodes.length;
+	}else{
+		nodes = [];
+	}
+	let maxNode = expectedNumber - 1;
+	for(const {A, B} of edges){
+		maxNode = Math.max(A, B, maxNode);
+		nodes.length = maxNode+1;
+		const nA = nodes[A] ??= makeNode(null, A);
+		const nB = nodes[B] ??= makeNode(null, B);
+		nA.neighbours.push(B);
+		nB.neighbours.push(A);
+	}
+	if(expectedNumber > 0 && maxNode >= expectedNumber){
+		eprintln("not seen enough nodes when creting graph");
+		return null;
+	}
+	return Object.assign({edges, nodes, maxNode}, GRAPH);
+}
+/**
+ * @generator
+ * @param { Graph } graph 
+ * @param { int } startIdx 
+ * @yields { WayPoint } the next node, a path leading to it, in bfs order
+ */
+function* bfs(graph, startIdx){
+	const passed = new Set([startIdx]);
+	let front = [makePath(startIdx, null)];
+	let next = [];
+
+	while(front.length > 0){
+		for(const path of front){
+      const nodeID = path.node;
+			const node = graph.nodes[nodeID];
+			const wp = {path, node, graph};
+			yield wp;
+			for(const neighbour of node.neighbours){
+				if(passed.has(neighbour))
+					continue;
+				passed.add(neighbour);
+				next.push(makePath(neighbour, path));
+			}
+		}
+		[front, next] = [next, front];
+		next.length = 0;
+	}
+}
+/** @returns {Node} */
+function makeNode(data, index){
+	const neighbours = [];
+	return Object.assign({neighbours, index, data, hasData : !!data}, NODE);
+}
+/**
+ * @param {Graph} graph ref to the graph we're working in
+ * @param {int} node index of the node in that graph
+ * @param {Path?} base if this is not a base path, the path leading to here
+ * @param {number} weight in weighted graphs, the cost of the edge
+ * @returns {Path} a new Path
+ */
+function makePath(node, base, weight = 1){
+	const length = (base?.isPath ? base.length : 0) + weight;
+	return Object.assign({base, length, node}, PATH);
+}
+
+/** iterate over a path, from the end to the start
+ * @generator
+ * @param {Path} path 
+ * @yields {int} the previous node in this path
+ */
+function* rev(path){
+	let p = path;
+	while(p?.isPath){
+		yield p.node;
+		p = p.base;
+	}
+}
+/** iterate over a path, in expected order: 
+ * @generator
+ * @param {Path} path 
+ * @yields {int} the previous node in this path
+ */
+function* iter(path){
+	if(path?.base?.isPath)
+		yield * iter(path.base)
+	if(path?.isPath)
+		yield path.node;
+}
+
+const GRAPH = {isGraph : true}; GRAPH.type = GRAPH;
+const NODE = {isNode : true}; NODE.type = NODE;
+const PATH = {isPath : true}; PATH.type = PATH;
+

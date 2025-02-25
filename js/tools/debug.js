@@ -7,7 +7,7 @@ const importTime = performance.now();
 export function makeReadline(){
 	const folder = Deno.args[0];
 	const inputName = Deno.args[1];
-	console.log(`reading input ${folder} from folder ${inputName}`);
+	console.log(`reading input ${inputName} from folder ${folder}`);
 	const lines = Deno.readTextFileSync(`${folder}\\input${inputName}.txt`).split("\n");
 	return readerFromLines(lines);
 }
@@ -21,7 +21,7 @@ export const readerFromString = str => readerFromLines(lines(str));
 export function makePrintLn(){
 	const folder = Deno.args[0];
 	const inputName = Deno.args[1];
-	console.log(`preparing outputs ${folder} from folder ${inputName}`);
+	console.log(`preparing outputs ${inputName} from folder ${folder}`);
 	try{
 		const lines = Deno.readTextFileSync(`${folder}\\output${inputName}.txt`).split("\n");
 		return printerFromLines(lines);
