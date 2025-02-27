@@ -1,6 +1,6 @@
 import { assertEquals, assertFalse, assert } from "jsr:@std/assert";
 import graphs from "./graphs.js";
-const {makeGraph, bfs, iter, rev} = graphs;
+const {makeGraph, bfs, iter, rev, pathsOfLength} = graphs;
 
 const edges = [{A : 0, B : 1},{A : 0, B : 2},{A : 1, B : 3}]
 const bigdata = new Array(6).fill(0).map((_, i) => `${i}:???`);
@@ -44,9 +44,26 @@ Deno.test("Graph creation", async (t)=> {
 	});
 });
 
+Deno.test("dfs", async (t) =>{
+	const graph = makeGraph(edges, bigdata);
+	await t.step("dfs without retracing" , ()=>{
+		const paths = [...pathsOfLength(graph, 0, 2, true)].map(path => [...iter(path)]);
+		assertEquals([[0, 1], [0, 2]], paths);
+		const paths2 = [...pathsOfLength(graph, 1, 2, true)].map(path => [...iter(path)]);
+		assertEquals([[1, 0], [1, 3]], paths2);
+		const paths3 = [...pathsOfLength(graph, 2, 3, true)].map(path => [...iter(path)]);
+		assertEquals([[2, 0, 1]], paths3);
+	});
+	await t.step("dfs with retracing" , ()=>{
+		const paths = [...pathsOfLength(graph, 2, 3, false)].map(path => [...iter(path)]);
+		assertEquals([[2, 0, 1], [2, 0, 2]], paths);
+		//                              ^ path goes back
+	});
+});
+
 Deno.test("bfs", async (t) =>{
+	const graph = makeGraph(edges, bigdata);
 	await t.step("can iterate over all paths" , ()=>{
-		const graph = makeGraph(edges, bigdata);
 		const paths = [...bfs(graph, 0)];
 		assertEquals(4, paths.length);
 	});
@@ -57,7 +74,6 @@ Deno.test("bfs", async (t) =>{
 		assertEquals([], [...rev(1)])
 	});
 	await t.step("can find path 0-3" , ()=>{
-		const graph = makeGraph(edges, bigdata);
 		let found = null;
 		for( const {path, node} of bfs(graph, 0)){
 			if(path.node == 3){
