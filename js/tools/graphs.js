@@ -104,13 +104,18 @@ function* bfs(graph, startIdx){
  * @param {Path?} basePath (used in recursion, pass null to start process)
  */
 function* pathsOfLength(graph, start, length, unique, basePath){
-	basePath ??= makePath(start);
+	if(! basePath){
+		basePath = makePath(start);
+		basePath.set = new Set([start]);
+	}
 	const node = graph.nodes[start];
 
-	for(const neighbour of node.neighbours){
-		if(unique && basePath.contains(neighbour))
-			continue;
+  const neighbours = unique ?
+			node.neighbours.filter(n => !basePath.set.has(n))
+		: node.neighbours;
+	for(const neighbour of neighbours){
 		const path = makePath(neighbour, basePath);
+		path.set = new Set([...iter(path)]);
 		if(path.length >= length)
 			yield path;
 		else
@@ -118,6 +123,7 @@ function* pathsOfLength(graph, start, length, unique, basePath){
 		
 	}
 }
+
 
 /** @returns {Node} */
 function makeNode(data, index){
