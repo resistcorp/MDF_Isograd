@@ -3,55 +3,62 @@ function main() {
   const bottles = rpl().map(v => ints(v));
   const norme = pref.map(x => x * x).reduce((v, a) => a + v, 0);
 
-  const BAG = [];
-  const numSamples = 1000;
-  const keep = 100;
-  const currentGeneration = new Array(numSamples).fill().map(_ => randomBlend(bottles.length, 1, 50));
-  currentGeneration.forEach(element => {
-    element.diff = scoreBottle(bottles, element.blend, pref, norme);
-  });
   
-  const endTime = performance.now() + 10_000;// 10 sceconds to make it
-  let loops = 0;
-  while(performance.now() < endTime){
-    
-    currentGeneration.sort( (a, b) => a.diff - b.diff );
-    currentGeneration.slice(keep).forEach(blend => mutate(blend, currentGeneration, bottles.length, keep));
-    currentGeneration.forEach(element => {
-      element.diff = scoreBottle(bottles, element.blend, pref, norme);
-    });
+  const create = _ => randomBlend(bottles.length, 1, 50);
+  const score = blend => scoreBottle(bottles, blend, pref);
+  const mutate = (blend, parentA, parentB) => mate(blend, parentA, parentB, bottles.length);
 
-    loop ++;
-  }
+  const currentGeneration = genetic(create, score, mutate);
   
   const best = currentGeneration[0];
-  eprintln("expecting a score of", score(best.diff, norme))
-  eprintln(`we evaluated ${loops} generations of 10 000 solutions`)
+  eprintln("expecting a score of", realscore(best.fitness, norme))
 
-  print(...best.blend);
+  print(...best.value);
+}
+
+function genetic(createFn, scoreFn, mateFn) {
+  const numSamples = 1000;
+  const keep = 100;
+  const time = 10_900;
+
+  const population = new Array(numSamples).fill().map(createFn).map(value => {
+    return { value, fitness: scoreFn(value) };
+  });
+
+  const endTime = performance.now() + time;
+  let loops = 0;
+  while (performance.now() < endTime) {
+
+    population.slice(keep).forEach((element) => {
+      const parentA = population[rndI(keep)].value;
+      const parentB = population[rndI(keep)].value;
+
+      mateFn(element.value, parentA, parentB);
+    });
+    population.forEach(element => {
+      element.fitness = scoreFn(element.value);
+    });
+    population.sort((a, b) => a.fitness - b.fitness);
+
+    loops++;
+  }
+  eprintln(`we evaluated ${loops} generations of ${numSamples} solutions`);
+  return population;
 }
 
 function randomBlend(total, min, max){
  const len = rndI(max, min);
- const blend = new Array(50).fill(0);
- blend.length = len;
- for(let i in blend) blend[i] = rndI(total);
- blend.sort();
- const diff = 10000;
- return {
-  blend, diff
- };
+ const blend = new Array(50).fill(0).slice(0, len).map(_ => rndI(total));
+ return blend;
 }
 
-function mutate(test, best, numBottles, keep){
-  const parentA = best[rndI(keep)];
-  const parentB = best[rndI(keep)];
+function mate(blend, parentA, parentB, numBottles){
   /** @type {[import("../../../tools/basic.js").int]} */
-  const blend = test.blend;
+  
   blend.length = 0;
 
-  for(const i in parentA.blend){
-    blend.push(take(parentA.blend, parentB.blend, i));
+  for(const i in parentA){
+    blend.push(take(parentA, parentB, i));
   }
 
   const mutateChance = rnd();
@@ -60,7 +67,7 @@ function mutate(test, best, numBottles, keep){
   else if (mutateChance > 0.9 && blend.length < 50)
     blend.splice(rndI(blend.length), 0, rndI(numBottles));
 
-  blend.sort();
+  // blend.sort();
 }
 
 function take(bA, bB, i){
@@ -73,14 +80,14 @@ function calcDiff(pref, values) {
   if (values.length != pref.length) return Number.MAX_VALUE;
   let ret = 0;
   for (let i in pref) {
-    let diff = pref[i] - values[i];
+    const diff = pref[i] - values[i];
     ret += diff * diff;
   }
   return ret;
 }
 
 const SCORE_SCRATCH = new Array(10);
-function scoreBottle(bottles, blend, pref, norme) {
+function scoreBottle(bottles, blend, pref) {
   SCORE_SCRATCH.fill(0);
   const len = blend.length;
   // eprintln(`scoring blend ${blend}`);
@@ -95,7 +102,7 @@ function scoreBottle(bottles, blend, pref, norme) {
   const diff = calcDiff(pref, SCORE_SCRATCH);
   return diff;
 }
-function score(diff, norme){
+function realscore(diff, norme){
   return (1 - diff / norme) * 1_000_000;
 }
 
