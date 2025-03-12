@@ -44,7 +44,7 @@
 			"cwd": "${workspaceFolder}",
 			"env": {},
 			"args": ["${relativeFileDirname}", "1"],
-			"runtimeExecutable": "C:\\CDS\\Applications\\Scoop\\shims\\deno.EXE",
+			"runtimeExecutable": "deno",
 			"runtimeArgs": [
 				"run",
 				"--unstable",
@@ -61,7 +61,7 @@
 			"cwd": "${workspaceFolder}",
 			"env": {},
 			"args": ["${relativeFileDirname}", "${input:num}"],
-			"runtimeExecutable": "C:\\CDS\\Applications\\Scoop\\shims\\deno.EXE",
+			"runtimeExecutable": "deno",
 			"runtimeArgs": [
 				"run",
 				"--unstable",
